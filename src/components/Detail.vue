@@ -4,12 +4,14 @@
 
       <div class="field-item">
         <label for="name">Наименование</label>
-        <input id="name" class="field" v-model="actions.item.name" name="field_id" type="text"/>
+        <input id="name" class="field" v-model="actions.item.name" :value="name" name="field_id" type="text"/>
+        <div class="error" v-if="!$v.name.required"></div>
+        <div class="error" v-if="!$v.name.minLength">Name must have at least {{$v.name.$params.minLength.min}} letters.</div>
       </div>
 
       <div class="field-item">
         <label for="url">URL</label>
-        <input id="url" class="field" v-model="actions.item.url" name="field_id" type="text"/>
+        <input id="url" class="field" v-model="actions.item.url" :value="urlName" name="field_id" type="text"/>
       </div>
 
       <div class="field-item">
@@ -24,7 +26,7 @@
 
       <div class="field-item">
         <label for="price">Цена</label>
-        <input id="price" class="field" v-model="actions.item.price" name="field_id" type="number"/>
+        <input id="price" class="field" v-model="actions.item.price" :value="price" name="field_id" type="number"/>
       </div>
 
       <div class="field-item">
@@ -99,6 +101,7 @@
 
 <script>
 import draggable from 'vuedraggable'
+import { required, minLength, url } from 'vuelidate/lib/validators'
 
 export default {
   name: "Detail",
@@ -452,8 +455,26 @@ export default {
     isFocus: false,
     selected: null,
     detailData: {},
-    showData: false
+    showData: false,
+    name: '',
+    urlName: '',
+    price: 0
   }),
+  validations: {
+    name: {
+      required,
+      minLength: minLength(1)
+    },
+    urlName: {
+      required,
+      url
+    },
+    price: {
+      twoPoints(value) {
+        return /^[1-9]?\d(\.\d\d?)?$/.test(value);
+      }
+    }
+  },
   methods : {
     searchItem() {
       if (this.nameValue !== "" && this.nameValue !== undefined) {
