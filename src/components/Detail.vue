@@ -4,14 +4,22 @@
 
       <div class="field-item">
         <label for="name">Наименование</label>
-        <input id="name" class="field" v-model="actions.item.name" :value="name" name="field_id" type="text"/>
-        <div class="error" v-if="!$v.name.required"></div>
-        <div class="error" v-if="!$v.name.minLength">Name must have at least {{$v.name.$params.minLength.min}} letters.</div>
+        <div>
+        <input id="name" class="field valid" v-model="actions.item.name" name="field_id" type="text"/>
+          <div class="error" v-if="!$v.actions.item.name.required">Обязательное поле!</div>
+          <div class="error" v-if="!$v.actions.item.name.minLength">Длина должна быть не менее 1 символа</div>
+        </div>
+        
       </div>
 
       <div class="field-item">
         <label for="url">URL</label>
-        <input id="url" class="field" v-model="actions.item.url" :value="urlName" name="field_id" type="text"/>
+        <div>
+          <input id="url" class="field valid" v-model="actions.item.url" name="field_id" type="text"/>
+          <div class="error" v-if="!$v.actions.item.url.required">Обязательное поле!</div>
+          <div class="error" v-if="!$v.actions.item.url.url">адрес должен быть в формате url</div>
+        </div>
+        
       </div>
 
       <div class="field-item">
@@ -26,7 +34,10 @@
 
       <div class="field-item">
         <label for="price">Цена</label>
-        <input id="price" class="field" v-model="actions.item.price" :value="price" name="field_id" type="number"/>
+        <div>
+          <input id="price" class="field valid" v-model="actions.item.price" name="field_id" type="number"/>
+          <div class="error" v-if="!$v.actions.item.price.twoPoints">Не более двух знаков после запятой!</div>
+        </div>
       </div>
 
       <div class="field-item">
@@ -455,25 +466,36 @@ export default {
     isFocus: false,
     selected: null,
     detailData: {},
-    showData: false,
-    name: '',
-    urlName: '',
-    price: 0
+    showData: false
   }),
   validations: {
-    name: {
-      required,
-      minLength: minLength(1)
+   actions: {
+    item: {
+      name: {
+         required,
+         minLength: minLength(1)
+      },
+      url: {
+        required,
+        url
+      },
+      price: {
+        twoPoints(value) {
+          return /^[1-9]?\d(\.\d\d?)?$/.test(value)
+        }
+      }
+    }
+     
     },
-    urlName: {
+    /*this.actions.item.url: {
       required,
       url
     },
-    price: {
+    this.actions.item.price: {
       twoPoints(value) {
         return /^[1-9]?\d(\.\d\d?)?$/.test(value);
       }
-    }
+    }*/
   },
   methods : {
     searchItem() {
@@ -516,13 +538,16 @@ export default {
       this.actions.technical_actions.splice(idx, 1);
     },
     saveDetail() {
-      this.actions.item.selected = this.selected;
+      this.$v.$touch();
+      if (!this.$v.$invalid) {
+        this.actions.item.selected = this.selected;
       this.detailData = {
         item: this.actions.item,
         technical_actions: this.actions.technical_actions
       }
       this.detailData = JSON.stringify(this.detailData, null, '\t');
       this.showData = true;
+      }
     }
   },
   created() {
@@ -570,7 +595,7 @@ export default {
         }
 
         & .field {
-          width: 40%;
+          width: 30em;
           border: none;
           border-bottom: 1px solid transparent;
           border-radius: 5px;
@@ -582,6 +607,14 @@ export default {
           //background-image: linear-gradient(to top, #1B2631, #acbfd2);
           //box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
           padding: 10px;
+        }
+
+        & .error {
+          color: red;
+        }
+
+        & .valid {
+          
         }
       }
     }
